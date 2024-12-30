@@ -158,6 +158,50 @@ mod test {
     }
 
     #[test]
+    fn test_two_services_with_no_transactions_but_different_starting_hash_gives_different_hash_sequence(
+    ) {
+        let (_signature_sender, signature_receiver) = channel();
+        let (result_sender, result_receiver) = channel();
+        let starting_hash = [8u8; 32];
+
+        std::thread::spawn(move || {
+            start_sha256_service(starting_hash, signature_receiver, result_sender)
+        });
+
+        let (_signature_sender_2, signature_receiver_2) = channel();
+        let (result_sender_2, result_receiver_2) = channel();
+        let starting_hash = [9u8; 32];
+        std::thread::spawn(move || {
+            start_sha256_service(starting_hash, signature_receiver_2, result_sender_2)
+        });
+
+        let sequence_1 = {
+            let mut seq = vec![];
+            seq.reserve(1_000_000);
+
+            for _ in 0..1_000_000 {
+                let result = result_receiver.recv().unwrap();
+                seq.push(result);
+            }
+            seq
+        };
+
+        let sequence_2 = {
+            let mut seq = vec![];
+            seq.reserve(1_000_000);
+
+            for _ in 0..1_000_000 {
+                let result = result_receiver_2.recv().unwrap();
+                seq.push(result);
+            }
+            seq
+        };
+        for i in 0..1_000_000 {
+            assert_ne!(sequence_1[i], sequence_2[i]);
+        }
+    }
+
+    #[test]
     pub fn bench_sha_loop_no_transactions() {
         let (_signature_sender, signature_receiver) = channel();
         let (result_sender, result_receiver) = channel();
