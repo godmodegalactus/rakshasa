@@ -1,2 +1,1 @@
-pub struct Ed25519IdentityKeypair {
-}
+pub struct Ed25519IdentityKeypair {}

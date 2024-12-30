@@ -1,6 +1,6 @@
 use rand::RngCore;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Signature(pub [u8; 64]);
 
 pub fn gen_signature() -> Signature {
